@@ -1,25 +1,28 @@
-# Use a lightweight OpenJDK image
-FROM eclipse-temurin:17-jdk-alpine
+# Use a lightweight OpenJDK 21 image
+FROM eclipse-temurin:21-jdk-alpine
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy Maven/Gradle wrapper and build files
-COPY pom.xml .
+# Copy Maven wrapper and project files
 COPY mvnw .
 COPY .mvn .mvn
+COPY pom.xml .
 
-# Download dependencies (Maven only)
+# Make mvnw executable
+RUN chmod +x ./mvnw
+
+# Download dependencies (offline mode)
 RUN ./mvnw dependency:go-offline -B
 
 # Copy the source code
 COPY src ./src
 
-# Package the app
+# Package the Spring Boot app (skip tests for faster build)
 RUN ./mvnw package -DskipTests
 
 # Expose the port your Spring Boot app uses
 EXPOSE 8080
 
-# Run the Spring Boot jar
+# Run the Spring Boot JAR
 CMD ["java", "-jar", "target/backend_test-0.0.1-SNAPSHOT.jar"]
