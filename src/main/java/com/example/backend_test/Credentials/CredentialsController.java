@@ -1,6 +1,7 @@
 package com.example.backend_test.Credentials;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,30 +19,34 @@ public class CredentialsController {
     private TicketsRepository ticketsRepository;
 
     @PostMapping("/login")
-    public String loginUser(@RequestBody Credentials credentials) {
+    public Map<String, Object> loginUser(@RequestBody Credentials credentials) {
         var res = credentialsRepository.findByUsername(credentials.getUsername());
 
         if (res == null)
-            return "{ \"username\": false }";
+            return Map.of("username", false);
         else if (res.getPassword().equals(credentials.getPassword()))
-            return "{ \"username\": true, \"password\": true }";
+            return Map.of(
+                    "username", true,
+                    "password", true);
         else
-            return "{ \"username\": true, \"password\": false }";
+            return Map.of(
+                    "username", true,
+                    "password", false);
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody Credentials credentials) {
+    public Map<String, Object> registerUser(@RequestBody Credentials credentials) {
         var res = credentialsRepository.findByUsername(credentials.getUsername());
 
         if (res != null)
-            return "{ \"success\": false }";
+            return Map.of("success", false);
         else {
             Tickets tickets = new Tickets(credentials.getUsername(), new ArrayList<>());
 
             credentialsRepository.save(credentials);
             ticketsRepository.save(tickets);
 
-            return "{ \"success\": true }";
+            return Map.of("success", true);
         }
     }
 
